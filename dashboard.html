@@ -107,13 +107,13 @@
 
       display: flex;
 
-      flex-direction: column;
+      flex-direction: row;
 
       align-items: center;
 
       margin-bottom: 20px;
 
-      font-size: 1.5em;
+      font-size: 3.5em;
 
       text-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add shadow for contrast */
 
@@ -123,7 +123,7 @@
 
     #currentIcon {
 
-      font-size: 3em;
+      font-size: 2em;
 
       margin-bottom: 5px;
 
@@ -198,7 +198,7 @@
   <div id="additionalInfo">
     <div id="sunTimes">Sunrise/Sunset: Loading...</div>
     <div id="moonPhase">Moon Phase: Loading...</div>
-    <div id="airQuality">Air Quality: Loading...</div>
+    <div id="airQuality">UV Index: Loading...</div>
   </div>
 
   <script>
@@ -265,7 +265,7 @@
 
       const currentIcon = icons[current.weathercode] || "❓";
       document.getElementById('currentIcon').textContent = currentIcon;
-      document.getElementById('currentText').textContent = `Now: ${convert(current.temperature)}°${unit()} — Wind: ${current.windspeed} km/h`;
+      document.getElementById('currentText').textContent = `${convert(current.temperature)}°${unit()} — Wind: ${current.windspeed} km/h`;
 
       const forecastDiv = document.getElementById('forecast');
       forecastDiv.innerHTML = "";
@@ -293,8 +293,8 @@
       const moonPhase = calculateMoonPhase(today);
       document.getElementById('moonPhase').textContent = `Moon Phase: ${moonPhase}`;
 
-      const airQuality = estimateAirQuality(daily.uv_index_max[0]);
-      document.getElementById('airQuality').textContent = `Air Quality: ${airQuality}`;
+      const uvIndex  = daily.uv_index_max[0];
+      document.getElementById('airQuality').textContent = `UV Index: ${uvIndex}`;
     }
 
     function convert(temp) {
@@ -332,16 +332,8 @@
       return phases[Math.floor(phase * 8)];
     }
 
-    function estimateAirQuality(uvIndex) {
-      if (isNaN(uvIndex)) return "Unknown";
-      if (uvIndex < 3) return "Good";
-      if (uvIndex < 6) return "Moderate";
-      if (uvIndex < 8) return "Unhealthy for Sensitive Groups";
-      return "Unhealthy";
-    }
-
     getWeather();
-    setInterval(getWeather, 1000);
+    setInterval(getWeather, 60 * 60 * 1000);
   </script>
 </body>
 </html>
