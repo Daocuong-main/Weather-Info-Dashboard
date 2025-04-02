@@ -1,0 +1,347 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <title>Enhanced Weather & Info Dashboard</title>
+
+  <style>
+
+    html, body {
+
+      margin: 0;
+
+      padding: 0;
+
+      width: 100vw;
+
+      height: 100vh;
+
+      font-family: 'Segoe UI', sans-serif;
+
+      background: #1e1e2f url('') no-repeat center center / cover;
+
+      color: white;
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      text-align: center;
+
+      overflow: hidden;
+
+      position: relative;
+
+    }
+
+
+
+    #unitToggle {
+
+      position: absolute;
+
+      top: 10px;
+
+      right: 10px;
+
+      background: rgba(255,255,255,0.1);
+
+      border: none;
+
+      color: white;
+
+      font-size: 1.2em;
+
+      padding: 6px 12px;
+
+      border-radius: 8px;
+
+      cursor: pointer;
+
+      transition: background 0.3s;
+
+    }
+
+
+
+    #unitToggle:hover {
+
+      background: rgba(255,255,255,0.2);
+
+    }
+
+
+
+    #time {
+
+      font-size: 6em;
+
+      margin-top: 20px;
+
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add shadow for contrast */
+
+    }
+
+
+
+    #date {
+
+      font-size: 2em;
+
+      margin-bottom: 20px;
+
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add shadow for contrast */
+
+    }
+
+
+
+    #currentWeather {
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      margin-bottom: 20px;
+
+      font-size: 1.5em;
+
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add shadow for contrast */
+
+    }
+
+
+
+    #currentIcon {
+
+      font-size: 3em;
+
+      margin-bottom: 5px;
+
+    }
+
+
+
+    .forecast {
+
+      display: flex;
+
+      justify-content: center;
+
+      gap: 10px;
+
+      flex-wrap: wrap;
+
+      margin: 10px;
+
+      max-width: 90vw;
+
+    }
+
+
+
+    .day {
+
+      background: rgba(0, 0, 0, 0.4);
+
+      border-radius: 10px;
+
+      padding: 10px;
+
+      min-width: 90px;
+
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Add shadow for contrast */
+
+    }
+
+
+
+    #additionalInfo {
+
+      margin-top: 20px;
+
+      font-size: 1.2em;
+
+      background: rgba(0, 0, 0, 0.3);
+
+      padding: 15px;
+
+      border-radius: 10px;
+
+      max-width: 80vw;
+
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Add shadow for contrast */
+    }
+  </style>
+</head>
+<body>
+  <button id="unitToggle">°C</button>
+  <div id="time">--:--</div>
+  <div id="date">Loading...</div>
+
+  <div id="currentWeather">
+    <div id="currentIcon">❓</div>
+    <div id="currentText">Loading weather...</div>
+  </div>
+
+  <div class="forecast" id="forecast">Loading forecast...</div>
+
+  <div id="additionalInfo">
+    <div id="sunTimes">Sunrise/Sunset: Loading...</div>
+    <div id="moonPhase">Moon Phase: Loading...</div>
+    <div id="airQuality">Air Quality: Loading...</div>
+  </div>
+
+  <script>
+    function changeBackground() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const imgURL = `https://picsum.photos/${width}/${height}?blur=3&random=${new Date().getTime()}`;
+
+      const img = new Image();
+      img.onload = () => {
+        // Add a semi-transparent dark overlay to ensure readability
+
+        document.body.style.background = `linear-gradient(rgba(30, 30, 47, 0.7), rgba(30, 30, 47, 0.7)), url('${imgURL}') no-repeat center center / cover`;
+      };
+      img.onerror = () => {
+        document.body.style.backgroundColor = "#1e1e2f";
+      };
+      img.src = imgURL;
+    }
+
+    changeBackground();
+    setInterval(changeBackground, 60 * 60 * 1000);
+
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('time').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('date').textContent = now.toLocaleDateString(undefined, {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    let useCelsius = true;
+    const lat = 21.0285, lon = 105.8544; // Hanoi, Vietnam
+    const icons = {
+      0: "☀️", 1: "🌤", 2: "⛅", 3: "☁️",
+      45: "🌫️", 48: "🌫️", 51: "🌦️",
+      61: "🌧️", 71: "❄️", 80: "🌧️",
+      95: "⛈️", 96: "⛈️"
+    };
+
+    async function getWeather() {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset,uv_index_max&hourly=uv_index&timezone=auto`);
+        if (!res.ok) throw new Error("Network response was not ok");
+        const data = await res.json();
+        renderWeather(data);
+      } catch (e) {
+        document.getElementById('currentText').textContent = "Weather unavailable";
+        document.getElementById('forecast').textContent = "Forecast unavailable";
+        document.getElementById('additionalInfo').innerHTML = "Additional info unavailable";
+      }
+    }
+
+    function renderWeather(data) {
+      if (!data || !data.current_weather) {
+        document.getElementById('currentText').textContent = "Weather data missing";
+        return;
+      }
+
+      const current = data.current_weather;
+      const daily = data.daily;
+
+      const currentIcon = icons[current.weathercode] || "❓";
+      document.getElementById('currentIcon').textContent = currentIcon;
+      document.getElementById('currentText').textContent = `Now: ${convert(current.temperature)}°${unit()} — Wind: ${current.windspeed} km/h`;
+
+      const forecastDiv = document.getElementById('forecast');
+      forecastDiv.innerHTML = "";
+
+      for (let i = 0; i < Math.min(6, daily.time.length); i++) {
+        const dayName = new Date(daily.time[i]).toLocaleDateString(undefined, { weekday: 'short' });
+        const icon = icons[daily.weathercode[i]] || "❓";
+        const min = convert(daily.temperature_2m_min[i]);
+        const max = convert(daily.temperature_2m_max[i]);
+
+        forecastDiv.innerHTML += `
+          <div class="day">
+            <div>${dayName}</div>
+            <div style="font-size: 2em">${icon}</div>
+            <div>${min}–${max}°${unit()}</div>
+          </div>
+        `;
+      }
+
+      const today = new Date();
+      const sunrise = new Date(daily.sunrise[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const sunset = new Date(daily.sunset[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('sunTimes').textContent = `Sunrise/Sunset: ${sunrise} / ${sunset}`;
+
+      const moonPhase = calculateMoonPhase(today);
+      document.getElementById('moonPhase').textContent = `Moon Phase: ${moonPhase}`;
+
+      const airQuality = estimateAirQuality(daily.uv_index_max[0]);
+      document.getElementById('airQuality').textContent = `Air Quality: ${airQuality}`;
+    }
+
+    function convert(temp) {
+      return useCelsius ? Math.round(temp) : Math.round(temp * 9 / 5 + 32);
+    }
+
+    function unit() {
+      return useCelsius ? 'C' : 'F';
+    }
+
+    document.getElementById('unitToggle').addEventListener('click', () => {
+      useCelsius = !useCelsius;
+      document.getElementById('unitToggle').textContent = `°${unit()}`; // Ensure degree symbol is displayed
+      getWeather(); // Re-fetch weather with new unit
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        alert("Press Ctrl+Alt+F1 and use `pkill chromium` to exit kiosk.");
+      }
+    });
+
+    function calculateMoonPhase(date) {
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const c = Math.floor(year / 100);
+      const y = year % 100;
+      const m = month;
+      const d = day;
+      const k = Math.floor((y * 12.37) + ((m * 30.6) + d));
+      const t = k / 1236.85;
+      const phase = (1 - Math.cos(2 * Math.PI * t)) / 2;
+      const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
+      return phases[Math.floor(phase * 8)];
+    }
+
+    function estimateAirQuality(uvIndex) {
+      if (isNaN(uvIndex)) return "Unknown";
+      if (uvIndex < 3) return "Good";
+      if (uvIndex < 6) return "Moderate";
+      if (uvIndex < 8) return "Unhealthy for Sensitive Groups";
+      return "Unhealthy";
+    }
+
+    getWeather();
+    setInterval(getWeather, 1000);
+  </script>
+</body>
+</html>
