@@ -1,7 +1,3 @@
-Here's your **GitHub-ready Markdown documentation** for saving the HTML dashboard project and setup guide:
-
----
-
 # 🧭 Weather & Info Dashboard for Ubuntu Tablet (Lubuntu + LXQt)
 
 This project turns an old Linux tablet (e.g. Lubuntu 24.04, 1024×600 resolution) into a **beautiful, always-on fullscreen dashboard** showing:
