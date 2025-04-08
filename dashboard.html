@@ -1,185 +1,124 @@
-
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
   <meta charset="UTF-8">
-
   <title>Enhanced Weather & Info Dashboard</title>
-
   <style>
-
     html, body {
-
       margin: 0;
-
       padding: 0;
-
       width: 100vw;
-
       height: 100vh;
-
       font-family: 'Segoe UI', sans-serif;
-
       background: #1e1e2f url('') no-repeat center center / cover;
-
       color: white;
-
       display: flex;
-
       flex-direction: column;
-
       align-items: center;
-
       text-align: center;
-
       overflow: hidden;
-
       position: relative;
-
     }
-
-
 
     #unitToggle {
-
       position: absolute;
-
       top: 10px;
-
       right: 10px;
-
       background: rgba(255,255,255,0.1);
-
       border: none;
-
       color: white;
-
       font-size: 1.2em;
-
       padding: 6px 12px;
-
       border-radius: 8px;
-
       cursor: pointer;
-
       transition: background 0.3s;
-
     }
-
-
 
     #unitToggle:hover {
-
       background: rgba(255,255,255,0.2);
-
     }
-
-
 
     #time {
-
       font-size: 6em;
-
       margin-top: 20px;
-
-      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add shadow for contrast */
-
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
-
-
 
     #date {
-
       font-size: 2em;
-
       margin-bottom: 20px;
-
-      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add shadow for contrast */
-
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
-
-
 
     #currentWeather {
-
       display: flex;
-
       flex-direction: row;
-
       align-items: center;
-
       margin-bottom: 20px;
-
-      font-size: 3.5em;
-
-      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add shadow for contrast */
-
+      font-size: 5em;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      gap: 20px;
     }
 
-
-
-    #currentIcon {
-
-      font-size: 1em;
-
-      margin-bottom: 5px;
-
+    .iconGroup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.6em;
     }
-
-
 
     .forecast {
-
       display: flex;
-
       justify-content: center;
-
       gap: 9px;
-
       flex-wrap: wrap;
-
       margin: 10px;
-
       max-width: 90vw;
-
     }
-
-
 
     .day {
-
       background: rgba(0, 0, 0, 0.4);
-
       border-radius: 10px;
-
       padding: 10px;
-
       min-width: 90px;
-
-      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Add shadow for contrast */
-
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     }
 
-
-
-    #additionalInfo {
-
+    /* New styles for additional info boxes */
+    #infoBoxes {
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
       margin-top: 20px;
+      width: 100%;
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
 
-      font-size: 1.2em;
-
+    .additional-box {
+      width: 150px;
+      height: 150px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       background: rgba(0, 0, 0, 0.3);
-
-      padding: 15px;
-
       border-radius: 10px;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+      margin: 5px;
+    }
 
-      max-width: 80vw;
+    .additional-box .icon {
+      font-size: 6em;
+    }
 
-      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Add shadow for contrast */
+    .additional-box .time {
+      font-size: 2em;
+      margin-top: 5px;
+    }
+
+    .additional-box .value {
+      font-size: 6em;
     }
   </style>
 </head>
@@ -190,15 +129,33 @@
 
   <div id="currentWeather">
     <div id="currentIcon">❓</div>
-    <div id="currentText">Loading weather...</div>
+    <div class="iconGroup" id="currentTemp">🌡️ --°C</div>
+    <div class="iconGroup" id="currentWind">💨 -- km/h</div>
+    <div class="iconGroup" id="currentHumidity">💧 --%</div>
   </div>
 
   <div class="forecast" id="forecast">Loading forecast...</div>
 
-  <div id="additionalInfo">
-    <div id="sunTimes">Sunrise/Sunset: Loading...</div>
-    <div id="moonPhase">Moon Phase: Loading...</div>
-    <div id="airQuality">UV Index: Loading...</div>
+  <!-- New row for additional info boxes -->
+  <div id="infoBoxes">
+    <!-- Sunrise box -->
+    <div class="additional-box" id="sunriseBox">
+      <div class="icon" id="sunriseIcon">🌅</div>
+      <div class="time" id="sunriseTime">--:--</div>
+    </div>
+    <!-- Sunset box -->
+    <div class="additional-box" id="sunsetBox">
+      <div class="icon" id="sunsetIcon">🌇</div>
+      <div class="time" id="sunsetTime">--:--</div>
+    </div>
+    <!-- Moon phase box (icon only) -->
+    <div class="additional-box" id="moonBox">
+      <div class="icon" id="moonIcon">🌑</div>
+    </div>
+    <!-- UV index box -->
+    <div class="additional-box" id="uvBox">
+      <div class="value" id="uvValue">--</div>
+    </div>
   </div>
 
   <script>
@@ -206,11 +163,8 @@
       const width = window.innerWidth;
       const height = window.innerHeight;
       const imgURL = `https://picsum.photos/${width}/${height}?blur=3&random=${new Date().getTime()}`;
-
       const img = new Image();
       img.onload = () => {
-        // Add a semi-transparent dark overlay to ensure readability
-
         document.body.style.background = `linear-gradient(rgba(30, 30, 47, 0.7), rgba(30, 30, 47, 0.7)), url('${imgURL}') no-repeat center center / cover`;
       };
       img.onerror = () => {
@@ -243,20 +197,24 @@
 
     async function getWeather() {
       try {
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset,uv_index_max&hourly=uv_index&timezone=auto`);
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset,uv_index_max&hourly=relative_humidity_2m&timezone=auto`);
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
         renderWeather(data);
       } catch (e) {
-        document.getElementById('currentText').textContent = "Weather unavailable";
+        document.getElementById('currentTemp').textContent = "🌡️ N/A";
         document.getElementById('forecast').textContent = "Forecast unavailable";
-        document.getElementById('additionalInfo').innerHTML = "Additional info unavailable";
+        // Fallback for info boxes
+        document.getElementById('sunriseTime').textContent = "--:--";
+        document.getElementById('sunsetTime').textContent = "--:--";
+        document.getElementById('moonIcon').textContent = "🌑";
+        document.getElementById('uvValue').textContent = "--";
       }
     }
 
     function renderWeather(data) {
       if (!data || !data.current_weather) {
-        document.getElementById('currentText').textContent = "Weather data missing";
+        document.getElementById('currentTemp').textContent = "🌡️ N/A";
         return;
       }
 
@@ -265,7 +223,12 @@
 
       const currentIcon = icons[current.weathercode] || "❓";
       document.getElementById('currentIcon').textContent = currentIcon;
-      document.getElementById('currentText').textContent = `${convert(current.temperature)}°${unit()} — Wind: ${current.windspeed} km/h`;
+      document.getElementById('currentTemp').textContent = `🌡️ ${convert(current.temperature)}°${unit()}`;
+      document.getElementById('currentWind').textContent = `💨 ${current.windspeed} km/h`;
+
+      const nowHour = new Date().getHours();
+      const hourlyHumidity = data.hourly.relative_humidity_2m[nowHour] || "--";
+      document.getElementById('currentHumidity').textContent = `💧 ${hourlyHumidity}%`;
 
       const forecastDiv = document.getElementById('forecast');
       forecastDiv.innerHTML = "";
@@ -286,16 +249,19 @@
         `;
       }
 
-      const today = new Date();
       const sunrise = new Date(daily.sunrise[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const sunset = new Date(daily.sunset[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      document.getElementById('sunTimes').textContent = `Sunrise/Sunset: ${sunrise} / ${sunset}`;
+      document.getElementById('sunriseTime').textContent = sunrise;
+      document.getElementById('sunsetTime').textContent = sunset;
 
-      const moonPhase = calculateMoonPhase(today);
-      document.getElementById('moonPhase').textContent = `Moon Phase: ${moonPhase}`;
+      // Update moon icon using calculated moon phase
+      const today = new Date();
+      const moonIcon = calculateMoonPhaseIcon(today);
+      document.getElementById('moonIcon').textContent = moonIcon;
 
       const uvIndex  = daily.uv_index_max[0];
-      document.getElementById('airQuality').textContent = `UV Index: ${uvIndex}`;
+      document.getElementById('uvValue').textContent = uvIndex;
+      document.getElementById('uvValue').style.color = getUVColor(uvIndex);
     }
 
     function convert(temp) {
@@ -308,8 +274,8 @@
 
     document.getElementById('unitToggle').addEventListener('click', () => {
       useCelsius = !useCelsius;
-      document.getElementById('unitToggle').textContent = `°${unit()}`; // Ensure degree symbol is displayed
-      getWeather(); // Re-fetch weather with new unit
+      document.getElementById('unitToggle').textContent = `°${unit()}`;
+      getWeather();
     });
 
     document.addEventListener('keydown', (e) => {
@@ -318,19 +284,26 @@
       }
     });
 
-    function calculateMoonPhase(date) {
+    // Returns a color based on the UV index value.
+    function getUVColor(uv) {
+      if (uv < 3) return "green";
+      if (uv < 6) return "yellow";
+      if (uv < 8) return "orange";
+      if (uv < 11) return "red";
+      return "purple";
+    }
+
+    // Calculates the moon phase and returns a corresponding emoji.
+    function calculateMoonPhaseIcon(date) {
+      const phases = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
       const day = date.getDate();
-      const c = Math.floor(year / 100);
-      const y = year % 100;
-      const m = month;
-      const d = day;
-      const k = Math.floor((y * 12.37) + ((m * 30.6) + d));
+      const k = Math.floor(((year % 100) * 12.37) + ((month * 30.6) + day));
       const t = k / 1236.85;
-      const phase = (1 - Math.cos(2 * Math.PI * t)) / 2;
-      const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
-      return phases[Math.floor(phase * 8)];
+      const phaseValue = (1 - Math.cos(2 * Math.PI * t)) / 2;
+      const phaseIndex = Math.floor(phaseValue * 8) % 8;
+      return phases[phaseIndex];
     }
 
     getWeather();
