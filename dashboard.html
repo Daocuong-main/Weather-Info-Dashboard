@@ -43,7 +43,7 @@
     }
 
     #time {
-      font-size: 6em;
+      font-size: 5em;
       margin-top: 30px;
       text-shadow: 0 0 15px rgba(0, 0, 0, 0.6), 0 0 5px rgba(255, 255, 255, 0.3);
       animation: fadeIn 2s ease-in-out infinite alternate;
@@ -61,7 +61,7 @@
       flex-direction: row;
       align-items: center;
       margin-bottom: 30px;
-      font-size: 3.5em;
+      font-size: 3em;
       background: rgba(0, 0, 0, 0.2);
       padding: 20px 40px;
       border-radius: 15px;
@@ -79,7 +79,7 @@
     .forecast {
       display: flex;
       justify-content: center;
-      gap: 15px;
+      gap: 5px;
       flex-wrap: wrap;
       margin: 20px;
       max-width: 90vw;
@@ -113,6 +113,75 @@
       box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
       text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
       animation: fadeInUp 1s ease-out;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .info-item:hover {
+      background: rgba(0, 0, 0, 0.2);
+      transform: translateX(5px);
+    }
+
+    .sunrise-sunset-bar {
+      width: 200px;
+      height: 20px;
+      background: #333;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .sunrise-marker, .sunset-marker {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 2px;
+      background: #ffd700;
+    }
+
+    .moon-phase-circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: conic-gradient(#a0a0ff 0% 100%);
+      position: relative;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .moon-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5em;
+    }
+
+    .uv-gauge {
+      width: 200px;
+      height: 20px;
+      background: linear-gradient(to right, #40ff40, #ffd700, #ff8000, #ff4040);
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .uv-indicator {
+      height: 100%;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 10px;
+      transition: width 0.5s ease;
     }
 
     @keyframes fadeIn {
@@ -155,9 +224,9 @@
   <div class="forecast" id="forecast">Loading forecast...</div>
 
   <div id="additionalInfo">
-    <div id="sunTimes">Sunrise/Sunset: Loading...</div>
-    <div id="moonPhase">Moon Phase: Loading...</div>
-    <div id="airQuality">UV Index: Loading...</div>
+    <div class="info-item" id="sunTimes">Sunrise/Sunset: Loading...</div>
+    <div class="info-item" id="moonPhase">Moon Phase: Loading...</div>
+    <div class="info-item" id="airQuality">UV Index: Loading...</div>
   </div>
 
   <script>
@@ -196,6 +265,16 @@
       45: "🌫️", 48: "🌫️", 51: "🌦️",
       61: "🌧️", 71: "❄️", 80: "🌧️",
       95: "⛈️", 96: "⛈️"
+    };
+    const moonIcons = {
+      'New Moon': '🌑',
+      'Waxing Crescent': '🌒',
+      'First Quarter': '🌓',
+      'Waxing Gibbous': '🌔',
+      'Full Moon': '🌕',
+      'Waning Gibbous': '🌖',
+      'Last Quarter': '🌗',
+      'Waning Crescent': '🌘'
     };
 
     async function getWeather() {
@@ -244,18 +323,46 @@
       }
 
       const today = new Date();
-      const sunrise = new Date(daily.sunrise[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const sunset = new Date(daily.sunset[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      document.getElementById('sunTimes').textContent = `Sunrise/Sunset: ${sunrise} / ${sunset}`;
-      document.getElementById('sunTimes').style.color = '#ffd700';
+      const sunrise = new Date(daily.sunrise[0]);
+      const sunset = new Date(daily.sunset[0]);
+      const sunriseTime = sunrise.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const sunsetTime = sunset.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const totalMinutes = 24 * 60; // Total minutes in a day
+      const sunriseMinutes = sunrise.getHours() * 60 + sunrise.getMinutes();
+      const sunsetMinutes = sunset.getHours() * 60 + sunset.getMinutes();
+
+      document.getElementById('sunTimes').innerHTML = `
+        Sunrise/Sunset: 
+        <div class="sunrise-sunset-bar">
+          <div class="sunrise-marker" style="left: ${(sunriseMinutes / totalMinutes) * 100}%;"></div>
+          <div class="sunset-marker" style="left: ${(sunsetMinutes / totalMinutes) * 100}%;"></div>
+        </div>
+        ${sunriseTime} / ${sunsetTime}
+      `;
+      document.getElementById('sunTimes').querySelector('.sunrise-sunset-bar').style.background = 'linear-gradient(to right, #ff4500, #ffd700)';
 
       const moonPhase = calculateMoonPhase(today);
-      document.getElementById('moonPhase').textContent = `Moon Phase: ${moonPhase}`;
-      document.getElementById('moonPhase').style.color = '#a0a0ff';
+      const moonIcon = moonIcons[moonPhase] || '❓';
+      const phaseAngle = (phases.indexOf(moonPhase) / phases.length) * 360;
+      document.getElementById('moonPhase').innerHTML = `
+        Moon Phase: 
+        <div class="moon-phase-circle" style="background: conic-gradient(#a0a0ff 0deg ${phaseAngle}deg, #333 ${phaseAngle}deg 360deg);">
+          <span class="moon-icon">${moonIcon}</span>
+        </div>
+        ${moonPhase}
+      `;
 
       const uvIndex = daily.uv_index_max[0];
-      document.getElementById('airQuality').textContent = `UV Index: ${uvIndex}`;
-      document.getElementById('airQuality').style.color = uvIndex > 5 ? '#ff4040' : '#40ff40';
+      const uvPercentage = (uvIndex / 11) * 100; // Assuming UV index max is 11 (very high)
+      document.getElementById('airQuality').innerHTML = `
+        UV Index: 
+        <div class="uv-gauge">
+          <div class="uv-indicator" style="width: ${uvPercentage}%;"></div>
+        </div>
+        ${uvIndex}
+      `;
+
+      document.getElementById('airQuality').querySelector('.uv-gauge').style.background = 'linear-gradient(to right, #40ff40, #ffd700, #ff8000, #ff4040)';
     }
 
     function convert(temp) {
@@ -292,6 +399,8 @@
       const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
       return phases[Math.floor(phase * 8)];
     }
+
+    const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
 
     getWeather();
     setInterval(getWeather, 60 * 60 * 1000);
