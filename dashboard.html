@@ -200,7 +200,7 @@
 
     async function getWeather() {
       try {
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}¤t_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset,uv_index_max&hourly=uv_index&timezone=auto`);
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset,uv_index_max&hourly=uv_index&timezone=auto`);
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
         renderWeather(data);
