@@ -37,22 +37,18 @@ sudo snap install chromium
 
 ### Step 2 – Create the Dashboard HTML
 
-1. Open a terminal and run:
+Open a terminal and run:
 
    ```bash
-   nano ~/Desktop/dashboard.html
+   git clone https://github.com/Daocuong-main/Weather-Info-Dashboard.git
    ```
-
-2. Paste the full dashboard HTML you created (with weather, moon, air quality, etc.)
-
-3. Save with `Ctrl+O`, press `Enter`, then `Ctrl+X`.
 
 ---
 
 ### Step 3 – Test It Manually
 
 ```bash
-snap run chromium --kiosk file:///home/$USER/Desktop/dashboard.html
+snap run chromium --kiosk file:///home/$USER/Weather-Info-Dashboard/dashboard.html
 ```
 
 ---
@@ -71,7 +67,7 @@ Paste:
 ```ini
 [Desktop Entry]
 Type=Application
-Exec=bash -c "sleep 10 && snap run chromium --kiosk file:///home/$USER/Desktop/dashboard.html"
+Exec=bash -c "sleep 10 && snap run chromium --kiosk file:///home/$USER/Weather-Info-Dashboard/dashboard.html"
 Hidden=false
 X-LXQt-Autostart-enabled=true
 Name=WeatherDashboard
