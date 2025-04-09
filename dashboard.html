@@ -162,7 +162,7 @@
     function changeBackground() {
       const width = window.innerWidth;
       const height = window.innerHeight;
-      const imgURL = `https://picsum.photos/${width}/${height}?blur=3&random=${new Date().getTime()}`;
+      const imgURL = `https://picsum.photos/${width}/${height}?random=${new Date().getTime()}`;
       const img = new Image();
       img.onload = () => {
         document.body.style.background = `linear-gradient(rgba(30, 30, 47, 0.7), rgba(30, 30, 47, 0.7)), url('${imgURL}') no-repeat center center / cover`;
